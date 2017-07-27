@@ -12,12 +12,17 @@ public class Song {
     String path;
     String name,artist,album;
     public  Song(){
-        icon=null;
         artist="";
         album="";
     }
 
-
+    public Song(Bitmap icon, String path, String name, String artist, String album) {
+        this.icon = icon;
+        this.path = path;
+        this.name = name;
+        this.artist = artist;
+        this.album = album;
+    }
 
     public Bitmap getIcon() {
         return icon;

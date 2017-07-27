@@ -62,6 +62,7 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent=new Intent(getContext(),Current.class);
+                intent.putExtra("progress",mp.getDuration());
                 startActivity(intent);
             }
         });
@@ -75,6 +76,7 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
         m=song;
         editor.putString("path",m.path);
         editor.putString("name",m.name);
+
         editor.commit();
         a=new ArrayList<>();
         song.setArtist("");

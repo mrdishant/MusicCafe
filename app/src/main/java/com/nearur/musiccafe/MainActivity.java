@@ -2,6 +2,7 @@
 package com.nearur.musiccafe;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
@@ -83,7 +84,9 @@ public class MainActivity extends AppCompatActivity implements U{
 
 
         if (id == R.id.action_settings) {
-            songsList.new task().execute();
+            Intent i=new Intent(this,Scan.class);
+            startActivity(i);
+            finish();
             return true;
         }
 

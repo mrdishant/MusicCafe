@@ -1,6 +1,7 @@
 
 package com.nearur.musiccafe;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class Current extends AppCompatActivity {
@@ -16,16 +18,19 @@ public class Current extends AppCompatActivity {
     CheckedTextView checkedTextView;
     TextView textView,textView2;
     ImageView imageView;
+    SeekBar seekBar;
     SharedPreferences preferences;
     MediaMetadataRetriever mediaMetadataRetriever;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current);
+        Intent rcv=getIntent();
         checkedTextView=(CheckedTextView)findViewById(R.id.checkedTextViewc);
         imageView=(ImageView)findViewById(R.id.imageViewc);
         textView=(TextView)findViewById(R.id.textViewc);
         textView2=(TextView)findViewById(R.id.textViewc2);
+        seekBar=(SeekBar)findViewById(R.id.seekBar);
         preferences=getSharedPreferences("music",MODE_PRIVATE);
         String path=preferences.getString("path","");
         s=new Song();
@@ -51,7 +56,7 @@ public class Current extends AppCompatActivity {
 
         checkedTextView.setText(s.name);
         textView.setText(s.getAlbum());
-        textView2.setText(s.getArtist());
-
+        textView2.setText(s.getArtist()+"\n"+s.path);
+        seekBar.setProgress(rcv.getIntExtra("progress",0));
     }
 }

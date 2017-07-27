@@ -2,17 +2,26 @@
 package com.nearur.musiccafe;
 
 
+import android.app.VoiceInteractor;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorMatrix;
+import android.media.Image;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.service.voice.VoiceInteractionService;
+import android.service.voice.VoiceInteractionSession;
+import android.service.voice.VoiceInteractionSessionService;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +33,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,8 +47,9 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
     ListView listView;
     MyAdapter adapter;
     Bitmap songImage;
+    ContentResolver resolver;
     SharedPreferences preferences;
-
+    SharedPreferences.Editor editor;
     MediaPlayer mp;
     StringBuffer buffer=new StringBuffer();
 
@@ -50,58 +61,66 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v=inflater.inflate(R.layout.fragment_songs_list, container, false);
-        listView =v.findViewById(R.id.listview);
-        a=new ArrayList<>();
-        mp=new MediaPlayer();
-        preferences=getContext().getSharedPreferences("music", Context.MODE_PRIVATE);
+        View v = inflater.inflate(R.layout.fragment_songs_list, container, false);
+        listView = v.findViewById(R.id.listview);
+        a = new ArrayList<>();
+        mediaMetadataRetriever = new MediaMetadataRetriever();
+        mp = new MediaPlayer();
+        resolver = getContext().getContentResolver();
+        songImage = BitmapFactory.decodeResource(getResources(), R.drawable.music);
+        preferences = getContext().getSharedPreferences("music", Context.MODE_PRIVATE);
+        editor = preferences.edit();
+       if (preferences.contains("sync")) {
+            get();
+        } else {
 
-        mediaMetadataRetriever=new MediaMetadataRetriever();
 
-        path= Environment.getExternalStorageDirectory().getAbsolutePath();
-        File file=new File(path);
-        String[] filenames=file.list();
-        for(String x:filenames){
-            String path2=file.getAbsolutePath()+"/"+x;
-            File file2=new File(path2);
-            String[] filenames2=file2.list();
-            if(filenames2!=null) {
-                for (String h : filenames2) {
-                    if (h.endsWith(".mp3")) {
-                        Song s = new Song();
-                        mediaMetadataRetriever.setDataSource(path2 + "/" + h);
-                        art = mediaMetadataRetriever.getEmbeddedPicture();
-                        if (art != null ) {
-                           songImage = BitmapFactory
-                                    .decodeByteArray(art, 0, art.length);
-                            s.setIcon(songImage);
+            path = Environment.getExternalStorageDirectory().getAbsolutePath();
+            File file = new File(path);
+            String[] filenames = file.list();
+            for (String x : filenames) {
+                String path2 = file.getAbsolutePath() + "/" + x;
+                File file2 = new File(path2);
+                String[] filenames2 = file2.list();
+                if (filenames2 != null) {
+                    for (String h : filenames2) {
+                        if (h.endsWith(".mp3")) {
+                            Song s = new Song();
+                            mediaMetadataRetriever.setDataSource(path2 + "/" + h);
+                            art = mediaMetadataRetriever.getEmbeddedPicture();
+                            if (art != null) {
+                                songImage = BitmapFactory
+                                        .decodeByteArray(art, 0, art.length);
+                                s.setIcon(songImage);
+                            }
+                            s.path = path2 + "/" + h;
+                            s.setAlbum(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
+                            s.setArtist(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
+                            s.setName(h);
+                            a.add(s);
+                            insert(s);
+
                         }
-                        s.path = path2 + "/" + h;
-                        s.setAlbum(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
-                        s.setArtist( mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
-                        s.setName(h);
-                        a.add(s);
-
                     }
                 }
-            }
-            if(x.endsWith(".mp3")){
-                Song s=new Song();
-               mediaMetadataRetriever.setDataSource(path+"/"+x);
-                art=mediaMetadataRetriever.getEmbeddedPicture();
-                if (art != null) {
-                    songImage = BitmapFactory
-                            .decodeByteArray(art, 0, art.length);
-                    s.setIcon(songImage);
+                if (x.endsWith(".mp3")) {
+                    Song s = new Song();
+                    mediaMetadataRetriever.setDataSource(path + "/" + x);
+                    art = mediaMetadataRetriever.getEmbeddedPicture();
+                    if (art != null) {
+                        songImage = BitmapFactory
+                                .decodeByteArray(art, 0, art.length);
+                        s.setIcon(songImage);
+                    }
+                    s.path = path + "/" + x;
+                    s.setAlbum(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
+                    s.setArtist(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
+                    s.setName(x);
+                    a.add(s);
+                    insert(s);
                 }
-                s.path=path+"/"+x;
-                s.setAlbum(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
-                s.setArtist( mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
-                s.setName(x);
-                a.add(s);
-            }
 
-        }
+            }
        /* if(filenames!=null&&filenames.length>0){
             for(File f:filenames){
                 if(f.isDirectory()){
@@ -124,84 +143,89 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
                 }
             }
         }*/
+              editor.putString("sync","hai");
+              editor.commit();
 
-        adapter=new MyAdapter(getContext(),R.layout.song,a);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(this);
-        System.out.println(buffer);
+            ad();
 
-        if(preferences.contains("path")){
-            for(Song s:a){
-                if(s.path.equals(preferences.getString("path",""))){
-                    U c=(U)getContext();
-                    c.set(s,false);
-                    break;
-                }
-            }
+
         }
         return v;
-
     }
 
     @Override
-    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+    public void onItemClick (AdapterView<?> adapterView, View view, int i, long l) {
 
                  U c=(U)getContext();
                  c.set(a.get(i),true);
+    }
+    public void ad(){
+        adapter = new MyAdapter(getContext(), R.layout.song, a);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(this);
+
+        if (preferences.contains("path")) {
+            for (Song s : a) {
+                if (s.path.equals(preferences.getString("path", ""))) {
+                    U c = (U) getContext();
+                    c.set(s, false);
+                    break;
+                }
+            }
+
+        }
     }
     public void set(Song m,boolean s){
 
     }
 
+    void insert(Song song){
+        ContentValues values=new ContentValues();
 
-    public class task extends AsyncTask<ArrayList<Song>,Void,ArrayList<Song>> {
-        ArrayList<Song> a = new ArrayList<>();
-        @Override
-        protected ArrayList<Song> doInBackground(ArrayList<Song>... arrayLists) {
-            String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-            File f = new File(path);
-            scan(f);
-            return a;
+        values.put(Util.sname,song.name);
+        values.put(Util.artist,song.artist);
+        values.put(Util.album,song.album);
+        values.put(Util.path,song.path);
+
+        if(song.icon!=null) {
+            Bitmap bmp = song.getIcon();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            values.put(Util.icon, String.valueOf(byteArray));
         }
-
-        public void scan(File d) {
-            if (d != null) {
-                File[] filenames = d.listFiles();
-                if (filenames != null) {
-                    for (File f : filenames) {
-                        if (f.isDirectory()) {
-                            scan(f);
-                        } else if (f.getName().endsWith(".mp3")) {
-                            Song s = new Song();
-                            mediaMetadataRetriever.setDataSource(f.getAbsolutePath());
-                            byte[] art = mediaMetadataRetriever.getEmbeddedPicture();
-                            if (art != null) {
-                                Bitmap songImage = BitmapFactory
-                                        .decodeByteArray(art, 0, art.length);
-                                s.setIcon(songImage);
-                            }
-                            s.path = f.getAbsolutePath();
-                            s.setAlbum(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
-                            s.setArtist(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
-                            s.setName(f.getName());
-                            a.add(s);
-                        }
-                    }
-
-                }
-
-            }
+        else{
+            values.put(Util.icon,String.valueOf(song.icon));
         }
+        Uri x=resolver.insert(Util.u,values);
 
-        @Override
-        protected void onPostExecute(ArrayList<Song> songs) {
-            adapter=new MyAdapter(getContext(),R.layout.song,songs);
-            listView.setAdapter(adapter);
-            Toast.makeText(getContext(),"Scan Done",Toast.LENGTH_LONG).show();
-            }
+        Toast.makeText(getContext(),"Songs Added: "+x.getLastPathSegment(),Toast.LENGTH_SHORT).show();
+
     }
 
+    void get(){
 
+        String[] p={"Name","Artist","Album","Path","Image"};
+        Cursor c=resolver.query(Util.u,p,null,null,null);
+        Bitmap image=null;
+        if(c!=null) {
+            while (c.moveToNext()) {
+
+                mediaMetadataRetriever.setDataSource(c.getString(3));
+                art=mediaMetadataRetriever.getEmbeddedPicture();
+                if (art != null) {
+                    image = BitmapFactory
+                            .decodeByteArray(art, 0, art.length);
+                }
+                a.add(new Song(image,c.getString(3),c.getString(0),c.getString(1),c.getString(2)));
+                image=null;
+            }
+            ad();
+
+        }
+
+
+    }
 
 
     }
