@@ -8,7 +8,8 @@ import android.graphics.BitmapFactory;
  */
 
 public class Song {
-    Bitmap icon;
+    int id;
+    byte[] icon;
     String path;
     String name,artist,album;
     public  Song(){
@@ -16,7 +17,8 @@ public class Song {
         album="";
     }
 
-    public Song(Bitmap icon, String path, String name, String artist, String album) {
+    public Song(int id,byte[] icon, String path, String name, String artist, String album) {
+        this.id=id;
         this.icon = icon;
         this.path = path;
         this.name = name;
@@ -24,11 +26,11 @@ public class Song {
         this.album = album;
     }
 
-    public Bitmap getIcon() {
+    public byte[] getIcon() {
         return icon;
     }
 
-    public void setIcon(Bitmap icon) {
+    public void setIcon(byte[] icon) {
         this.icon = icon;
     }
 

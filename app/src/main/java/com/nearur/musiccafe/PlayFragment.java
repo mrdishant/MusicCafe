@@ -2,9 +2,11 @@
 package com.nearur.musiccafe;
 
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -23,6 +25,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -38,13 +41,14 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
 
     ListView listView;
     MyAdapter adapter;
-    ArrayList<Song> a;
+    ArrayList<Song> a,a1;
     boolean play;
     ImageView btn;
     Context c;
     Song m;
     MediaPlayer mp;
     SharedPreferences preferences;
+    ContentResolver resolver;
     SharedPreferences.Editor editor;
 
 
@@ -53,6 +57,7 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
                              Bundle savedInstanceState) {
         View v=inflater.inflate(R.layout.fragment_play, container, false);
         c=getContext();
+        resolver=c.getContentResolver();
         btn=(ImageView)v.findViewById(R.id.btnplay);
         btn.setVisibility(Button.INVISIBLE);
         btn.setOnClickListener(this);
@@ -62,7 +67,8 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent=new Intent(getContext(),Current.class);
-                intent.putExtra("progress",mp.getDuration());
+                intent.putExtra("full",mp.getDuration());
+                intent.putExtra("progress",mp.getCurrentPosition());
                 startActivity(intent);
             }
         });
@@ -99,8 +105,27 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
         else{
             btn.setBackgroundResource(R.drawable.play);
         }
-    }
+        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                if(a1==null){
+                    a1=new ArrayList<Song>();
+                String[] p={"Name","Artist","Album","Path","Image","Id"};
+                Cursor c=resolver.query(Util.u,p,null,null,null);
+                if(c!=null) {
+                    while(c.moveToNext()){
+                        a1.add(new Song(c.getInt(5),c.getBlob(4),c.getString(3),c.getString(0),c.getString(1),c.getString(2)));
+                    }
+                }
+              set(a1.get(m.id),true);
+            }else{
+                    Collections.shuffle(a1);
+                    set(a1.get(m.id),true);
+            }
+            }
 
+        });
+    }
 
     public void onClick(View v) {
         if (play) {

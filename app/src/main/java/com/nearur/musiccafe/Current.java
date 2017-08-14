@@ -12,6 +12,7 @@ import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Current extends AppCompatActivity {
     Song s;
@@ -38,9 +39,7 @@ public class Current extends AppCompatActivity {
         mediaMetadataRetriever.setDataSource(path);
         byte[] art = mediaMetadataRetriever.getEmbeddedPicture();
         if (art != null ) {
-           Bitmap songImage = BitmapFactory
-                    .decodeByteArray(art, 0, art.length);
-            s.setIcon(songImage);
+            s.setIcon(art);
         }
         s.path = path;
         s.setAlbum(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
@@ -51,12 +50,16 @@ public class Current extends AppCompatActivity {
             imageView.setBackgroundResource(R.drawable.music);
         }
         else{
-            imageView.setImageBitmap(s.icon);
+            imageView.setImageBitmap(BitmapFactory.decodeByteArray(s.icon,0,s.icon.length));
         }
 
         checkedTextView.setText(s.name);
         textView.setText(s.getAlbum());
         textView2.setText(s.getArtist()+"\n"+s.path);
-        seekBar.setProgress(rcv.getIntExtra("progress",0));
+        int full=rcv.getIntExtra("full",0);
+        int current=rcv.getIntExtra("progress",0);
+        int perc=(current/full)*100;
+        Toast.makeText(Current.this,String.valueOf(perc),Toast.LENGTH_LONG).show();
+        seekBar.setProgress(perc);
     }
 }

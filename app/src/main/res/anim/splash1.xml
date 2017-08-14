@@ -4,11 +4,10 @@
 
     <translate
         android:startOffset="800"
-
         android:id="@+id/scale"
         android:fromYDelta="110%"
-        android:toYDelta="25%"
-        android:duration="2000"
+        android:toYDelta="0%"
+        android:duration="1000"
         />
 
 </set>

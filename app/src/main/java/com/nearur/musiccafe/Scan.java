@@ -9,18 +9,22 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class Scan extends AppCompatActivity {
 
     Button scan;
     TextView txt;
+    ListView listView;
     MediaMetadataRetriever mediaMetadataRetriever;
     int count=1;
     StringBuffer buffer=new StringBuffer();
@@ -40,7 +44,7 @@ public class Scan extends AppCompatActivity {
             public void onClick(View view) {
                 if(scan.getText().equals("Scan")){
                     scan.setText("Back");
-                    new task().execute();
+                 //   new task().execute();
                 }
                 else{
 
@@ -52,7 +56,6 @@ public class Scan extends AppCompatActivity {
 
 
     public class task extends AsyncTask<ArrayList<Song>,Void,ArrayList<Song>> {
-        ArrayList<Song> a = new ArrayList<>();
         @Override
         protected ArrayList<Song> doInBackground(ArrayList<Song>... arrayLists) {
             String path = Environment.getExternalStorageDirectory().getAbsolutePath();
@@ -78,9 +81,7 @@ public class Scan extends AppCompatActivity {
                             mediaMetadataRetriever.setDataSource(f.getAbsolutePath());
                             byte[] art = mediaMetadataRetriever.getEmbeddedPicture();
                             if (art != null) {
-                                Bitmap songImage = BitmapFactory
-                                        .decodeByteArray(art, 0, art.length);
-                                s.setIcon(songImage);
+                                s.setIcon(art);
                             }
                             s.path = f.getAbsolutePath();
                             s.setAlbum(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));

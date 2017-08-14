@@ -89,6 +89,12 @@ public class MainActivity extends AppCompatActivity implements U{
             finish();
             return true;
         }
+        if(id==R.id.radio){
+            Intent i=new Intent(this,Radio.class);
+            startActivity(i);
+            finish();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }

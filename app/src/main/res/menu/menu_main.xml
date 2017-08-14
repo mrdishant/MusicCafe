@@ -7,4 +7,10 @@
         android:orderInCategory="100"
         android:title="Scan"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/radio"
+        android:orderInCategory="100"
+        android:title="Radio"
+        app:showAsAction="always" />
 </menu>

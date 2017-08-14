@@ -45,14 +45,12 @@ public class MyAdapter extends ArrayAdapter {
             img.setImageBitmap(image);
         }
         else {
-            img.setImageBitmap(song.getIcon());
+            img.setImageBitmap(BitmapFactory.decodeByteArray(song.getIcon(),0,song.icon.length));
         }
 
         txtname.setText(song.getName().substring(0,song.getName().indexOf(".mp3")));
         txtalbum.setText(song.getAlbum());
         txtartist.setText(song.getArtist());
-
-
 
         return v;
     }
