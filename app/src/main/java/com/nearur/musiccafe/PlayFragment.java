@@ -106,7 +106,7 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
         else{
             btn.setBackgroundResource(R.drawable.play);
         }
-        /*mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 if(a1==null){
@@ -125,7 +125,7 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
             }
             }
 
-        });*/
+        });
     }
 
     public void onClick(View v) {
