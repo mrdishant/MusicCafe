@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -58,7 +59,7 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
         View v=inflater.inflate(R.layout.fragment_play, container, false);
         c=getContext();
         resolver=c.getContentResolver();
-        btn=(ImageView)v.findViewById(R.id.btnplay);
+        btn=(ImageButton) v.findViewById(R.id.btnplay);
         btn.setVisibility(Button.INVISIBLE);
         btn.setOnClickListener(this);
         mp=new MediaPlayer();
@@ -105,7 +106,7 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
         else{
             btn.setBackgroundResource(R.drawable.play);
         }
-        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        /*mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 if(a1==null){
@@ -124,7 +125,7 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
             }
             }
 
-        });
+        });*/
     }
 
     public void onClick(View v) {

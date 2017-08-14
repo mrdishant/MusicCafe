@@ -2,6 +2,7 @@
 package com.nearur.musiccafe;
 
 
+import android.app.ProgressDialog;
 import android.app.VoiceInteractor;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -43,16 +44,13 @@ import java.util.ArrayList;
  * A simple {@link Fragment} subclass.
  */
 public class SongsList extends Fragment implements AdapterView.OnItemClickListener,U {
-    String path;
+
     ListView listView;
     MyAdapter adapter;
     Bitmap songImage;
     ContentResolver resolver;
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
-    MediaPlayer mp;
-    StringBuffer buffer=new StringBuffer();
-
     ArrayList<Song> a;
     MediaMetadataRetriever mediaMetadataRetriever;
     byte[] art;
@@ -65,18 +63,16 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
         listView = v.findViewById(R.id.listview);
         a = new ArrayList<>();
         mediaMetadataRetriever = new MediaMetadataRetriever();
-        mp = new MediaPlayer();
         resolver = getContext().getContentResolver();
         songImage = BitmapFactory.decodeResource(getResources(), R.drawable.music);
         preferences = getContext().getSharedPreferences("music", Context.MODE_PRIVATE);
         editor = preferences.edit();
        if (preferences.contains("sync")) {
-            get();
+           new task().execute();
         } else {
-          a= findsong(Environment.getExternalStorageDirectory());
-              editor.putString("sync","hai");
-              editor.commit();
-           ad();
+           new task1().execute();
+           editor.putString("sync","hai");
+           editor.commit();
         }
         return v;
     }
@@ -96,7 +92,7 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
                 if (art != null) {
                     s.setIcon(art);
                 }
-                s.path = path + "/" + x;
+                s.path = x.getAbsolutePath();
                 s.setAlbum(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
                 s.setArtist(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
                 s.setName(x.getName());
@@ -139,19 +135,61 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
         values.put(Util.album,song.album);
         values.put(Util.path,song.path);
         values.put(Util.icon,song.icon);
-        Uri x=resolver.insert(Util.u,values);
-        Toast.makeText(getContext(),"Songs Added: "+x.getLastPathSegment(),Toast.LENGTH_SHORT).show();
+        resolver.insert(Util.u,values);
     }
 
-    void get(){
 
-        String[] p={"Name","Artist","Album","Path","Image"};
-        Cursor c=resolver.query(Util.u,p,null,null,null);
-        if(c!=null) {
-            while (c.moveToNext()) {
-                a.add(new Song(0,c.getBlob(4),c.getString(3),c.getString(0),c.getString(1),c.getString(2)));
+    class task  extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            String[] p={"Name","Artist","Album","Path","Image"};
+            Cursor c=resolver.query(Util.u,p,null,null,null);
+            if(c!=null) {
+                while (c.moveToNext()) {
+                    a.add(new Song(0, c.getBlob(4), c.getString(3), c.getString(0), c.getString(1), c.getString(2)));
+                }
             }
+            c.close();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
             ad();
         }
     }
+    class task1 extends AsyncTask<Void,Integer,ArrayList<Song>>{
+
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog=ProgressDialog.show(getContext(),"Please wait","Scanning...",false);
+            super.onPreExecute();
+        }
+
+        @Override
+        protected ArrayList<Song> doInBackground(Void... voids) {
+
+            a=findsong(Environment.getExternalStorageDirectory());
+            publishProgress(1);
+            return a;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Song> songs) {
+            super.onPostExecute(songs);
+            progressDialog.dismiss();
+            ad();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            Toast.makeText(getContext(),"Scanned",Toast.LENGTH_LONG).show();
+        }
     }
+
+}

@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity implements U{
     SongsList songsList;
     PlayFragment playFragment;
     FragmentManager fragmentManager;
-    ProgressDialog p;
 
     private ViewPager mViewPager;
     public void set(Song m,boolean d){
@@ -53,9 +52,6 @@ public class MainActivity extends AppCompatActivity implements U{
         songsList=new SongsList();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        p=new ProgressDialog(this);
-        p.setMessage("Scanning...");
-
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         playFragment=new PlayFragment();
         fragmentManager=getSupportFragmentManager();
