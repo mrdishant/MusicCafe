@@ -38,6 +38,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 
 /**
@@ -45,6 +47,7 @@ import java.util.ArrayList;
  */
 public class SongsList extends Fragment implements AdapterView.OnItemClickListener,U {
 
+    int i=1;
     ListView listView;
     MyAdapter adapter;
     Bitmap songImage;
@@ -87,6 +90,7 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
             }
             if (x.getName().endsWith(".mp3")) {
                 Song s = new Song();
+                s.id=i++;
                 mediaMetadataRetriever.setDataSource(x.getAbsolutePath());
                 art = mediaMetadataRetriever.getEmbeddedPicture();
                 if (art != null) {
@@ -109,6 +113,13 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
                  c.set(a.get(i),true);
     }
     public void ad(){
+        Comparator<Song> comparator=new Comparator<Song>() {
+            @Override
+            public int compare(Song o, Song t1) {
+                return o.name.compareTo(t1.name);
+            }
+        };
+        Collections.sort(a,comparator);
         adapter = new MyAdapter(getContext(), R.layout.song, a);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(this);
@@ -130,6 +141,7 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
 
     void insert(Song song){
         ContentValues values=new ContentValues();
+        values.put(Util.id,song.id);
         values.put(Util.sname,song.name);
         values.put(Util.artist,song.artist);
         values.put(Util.album,song.album);
@@ -141,13 +153,15 @@ public class SongsList extends Fragment implements AdapterView.OnItemClickListen
 
     class task  extends AsyncTask<Void,Void,Void>{
 
+
+        int i=1;
         @Override
         protected Void doInBackground(Void... voids) {
-            String[] p={"Name","Artist","Album","Path","Image"};
+            String[] p={"Name","Artist","Album","Path","Image","Id"};
             Cursor c=resolver.query(Util.u,p,null,null,null);
             if(c!=null) {
                 while (c.moveToNext()) {
-                    a.add(new Song(0, c.getBlob(4), c.getString(3), c.getString(0), c.getString(1), c.getString(2)));
+                    a.add(new Song(c.getInt(5), c.getBlob(4), c.getString(3), c.getString(0), c.getString(1), c.getString(2)));
                 }
             }
             c.close();

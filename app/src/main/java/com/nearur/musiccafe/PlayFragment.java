@@ -120,7 +120,6 @@ public class PlayFragment extends Fragment implements U,View.OnClickListener{
                 }
               set(a1.get(m.id),true);
             }else{
-                    Collections.shuffle(a1);
                     set(a1.get(m.id),true);
             }
             }
